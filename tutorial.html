@@ -188,10 +188,14 @@
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
                     <a href="lab.html" class="btn btn-ghost">Lab</a>
-                    <a href="authentication.html" class="btn btn-outline">
+                    <a href="authentication.html" class="btn btn-outline login-btn">
                         <i class="fas fa-sign-in-alt mr-2"></i>
                         Login
                     </a>
+                    <a href="authentication.html" class="btn btn-outline profile-btn" style="display: none;">
+						<i class="fas fa-user mr-2"></i>
+						Profile
+					</a>
                 </div>
                 <!-- Burger Button -->
                 <button class="burger-btn" id="burgerBtn">
@@ -218,10 +222,14 @@
                 <i class="fas fa-flask mr-2"></i>
                 Lab
             </a>
-            <button class="btn btn-outline w-full text-left menu-item">
-                <i class="fas fa-sign-in-alt mr-2"></i>
-                Login
-            </button>
+			<a href="authentication.html" class="btn btn-outline w-full text-left login-btn menu-item">
+				<i class="fas fa-sign-in-alt mr-2"></i>
+				Login
+			</a>
+			<a href="authentication.html" class="btn btn-outline w-full text-left profile-btn menu-item" style="display: none;">
+				<i class="fas fa-user mr-2"></i>
+				Profile
+			</a>
         </div>
     </div>
 
@@ -366,6 +374,11 @@
             }
         });
 
+        const navBar = document.querySelector('nav');
+		const desktopMenu = document.querySelector('.desktop-menu');
+		const loginBtns = document.querySelectorAll('.login-btn');
+		const profileBtns = document.querySelectorAll('.profile-btn');
+
         // Check if user is logged in
         async function checkUser() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -378,6 +391,13 @@
                     tutorial.querySelector('.btn-privileged').classList.add('btn-primary');
                     tutorial.querySelector('.btn-outline').classList.remove('btn-outline');
                 });
+
+                loginBtns.forEach(btn => btn.style.display = 'none');
+				profileBtns.forEach(btn => btn.style.display = 'flex');
+            } else {
+				// User is not logged in
+				loginBtns.forEach(btn => btn.style.display = 'flex');
+				profileBtns.forEach(btn => btn.style.display = 'none');                
             }
         }
 
