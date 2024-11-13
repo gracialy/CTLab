@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTLab</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="main.js"></script>
+    <style>
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background-color: rgb(55, 48, 163);
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: white;
+            color: black;
+        }
+        .btn-outline {
+            border: 1px solid rgb(229, 231, 235);
+            background-color: white;
+            color: rgb(55, 65, 81);
+            width: 100%;
+        }
+        .btn-outline:hover {
+            background-color: rgb(243, 244, 246);
+        }
+
+        .btn-ghost {
+            color: rgb(55, 65, 81);
+        }
+        .btn-ghost:hover {
+            background-color: rgb(243, 244, 246);
+        } 
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            transition: right 0.3s ease-in-out;
+            z-index: 50;
+            padding: 1rem;
+            box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .burger-btn {
+            cursor: pointer;
+            display: none;
+            padding: 0.5rem;
+        }
+
+        /* Hide burger on desktop */
+        @media (max-width: 767px) {
+            .burger-btn {
+                display: block;
+            }
+            .desktop-menu {
+                display: none;
+            }
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            .cta-buttons > div {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 1rem;
+            }
+            .hero-text {
+                text-align: center;
+            }
+            .hero-buttons {
+                justify-content: center !important;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .btn-primary, .btn-outline {
+                width: auto;
+            }
+            .desktop-menu {
+                display: flex !important;
+            }
+        }
+
+        /* Animation for menu items */
+        .menu-item {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .mobile-menu.active .menu-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .mobile-menu.active .menu-item:nth-child(1) { transition-delay: 0.1s; }
+        .mobile-menu.active .menu-item:nth-child(2) { transition-delay: 0.2s; }
+        .mobile-menu.active .menu-item:nth-child(3) { transition-delay: 0.3s; }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 40;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .auth-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .auth-form button {
+            padding: 10px;
+            background-color: rgb(55, 48, 163);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .auth-form button:hover {
+            background-color: rgb(55, 48, 163)
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-indigo-800"></i>
+                    <a href="index.html" class="ml-2 text-xl font-bold text-slate-400">CTLab</a>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="desktop-menu items-center space-x-4">
+                    <a href="tutorial.html" class="btn btn-ghost">Tutorial</a>
+                    <button class="btn btn-ghost">Lab</button>
+                </div>
+                <!-- Burger Button -->
+                <button class="burger-btn" id="burgerBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="overlay" id="overlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-robot text-indigo-800"></i>
+                <span class="ml-2 text-xl font-bold">CTLab</span>
+            </div>
+            <button class="p-2" id="closeMenu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+            <a href="tutorial.html" class="btn btn-ghost w-full text-left menu-item">
+                <i class="fas fa-book-open mr-2"></i>
+                Tutorial
+            </a>
+            <button class="btn btn-ghost w-full text-left menu-item">
+                <i class="fas fa-flask mr-2"></i>
+                Lab
+            </button>
+        </div>
+    </div>
+    
+    <div class="auth-container" id="authContainer">
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form">
+            <h2 class="text-2xl font-bold text-center mb-4">Login</h2>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <p>Don't have an account? <a href="#" id="showSignup" style="color: rgb(55, 48, 163);">Sign up</a></p>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="auth-form hidden">
+            <h2 class="text-2xl font-bold text-center mb-4">Sign Up</h2>
+            <input type="text" id="signupDisplayName" placeholder="Display Name" required>
+            <input type="email" id="signupEmail" placeholder="Email" required>
+            <input type="password" id="signupPassword" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+            <p>Already have an account? <a href="#" id="showLogin" style="color: rgb(55, 48, 163);">Login</a></p>
+        </form>
+
+        <!-- User Profile (shown when logged in) -->
+        <div id="userProfile" class="hidden">
+            <h2 class="text-2xl font-bold text-center mb-4">Welcome, <span id="userDisplayName" class="text-indigo-800"></span>!</h2>
+            <button id="logoutButton" class="text-indigo-800">Logout</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Initialize Supabase client
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const userProfile = document.getElementById('userProfile');
+        const showSignupLink = document.getElementById('showSignup');
+        const showLoginLink = document.getElementById('showLogin');
+        const logoutButton = document.getElementById('logoutButton');
+        const userDisplayName = document.getElementById('userDisplayName');
+
+        // Check for existing session on page load
+        checkUser();
+
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                showProfile(user);
+            }
+        }
+
+        // Event Listeners
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+                
+                showProfile(data.user);
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const displayName = document.getElementById('signupDisplayName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { display_name: displayName } }
+                });
+
+                if (error) throw error;
+                alert('Signup successful! Check your email for verification.');
+                showLoginForm();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        logoutButton.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            showLoginForm();
+        });
+
+        showSignupLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSignupForm();
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+
+        // UI Helper Functions
+        function showProfile(user) {
+            loginForm.classList.add('hidden');
+            signupForm.classList.add('hidden');
+            userProfile.classList.remove('hidden');
+            userDisplayName.textContent = user.user_metadata.display_name;
+        }
+
+        function showLoginForm() {
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            userProfile.classList.add('hidden');
+        }
+
+        function showSignupForm() {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            userProfile.classList.add('hidden');
+        }
+    </script>
+
+    <script>
+        // Mobile menu functionality
+        const burgerBtn = document.getElementById('burgerBtn');
+        const closeMenu = document.getElementById('closeMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        }
+
+        burgerBtn.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Close menu on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768 && mobileMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    </script>
+</body>
+</html>
