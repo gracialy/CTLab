@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTLab</title>
+    <title>CTLab - Home</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -141,13 +141,15 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
+                  <a href="index.html">
                     <i class="fas fa-robot text-indigo-800"></i>
                     <span class="ml-2 text-xl font-bold text-slate-400">CTLab</span>
+                  </a>
                 </div>
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
                     <a href="tutorial.html" class="btn btn-ghost">Tutorial</a>
-                    <button class="btn btn-ghost">Lab</button>
+                    <a href="lab.html" class="btn btn-ghost">Lab</a>
                     <a href="authentication.html" class="btn btn-outline">
                         <i class="fas fa-sign-in-alt mr-2"></i>
                         Login
@@ -166,8 +168,10 @@
     <div class="mobile-menu" id="mobileMenu">
         <div class="flex justify-between items-center mb-8">
             <div class="flex items-center">
+              <a href="index.html">
                 <i class="fas fa-robot text-indigo-800"></i>
                 <span class="ml-2 text-xl font-bold">CTLab</span>
+              </a>
             </div>
             <button class="p-2" id="closeMenu">
                 <i class="fas fa-times"></i>
@@ -178,10 +182,10 @@
                 <i class="fas fa-book-open mr-2"></i>
                 Tutorial
             </a>
-            <button class="btn btn-ghost w-full text-left menu-item">
+            <a href="lab.html" class="btn btn-ghost w-full text-left menu-item">
                 <i class="fas fa-flask mr-2"></i>
                 Lab
-            </button>
+            </a>
             <a href="authentication.html" class="btn btn-outline w-full text-left menu-item">
                 <i class="fas fa-sign-in-alt mr-2"></i>
                 Login
@@ -205,15 +209,15 @@
                         </p>
                         <div class="mt-5 sm:mt-8 cta-buttons sm:flex hero-buttons lg:justify-start">
                             <div class="rounded-md shadow">
-                                <button class="btn btn-primary">
-                                    Start Learning
-                                    <i class="fas fa-arrow-right ml-2"></i>
-                                </button>
+                                <a href="lab.html" class="btn btn-primary">
+                                  Start Learning
+                                  <i class="fas fa-arrow-right ml-2"></i>
+                                </a>
                             </div>
                             <div class="sm:ml-3">
-                                <button class="btn btn-outline">
-                                    View Tutorial
-                                </button>
+                                <a href="tutorial.html" class="btn btn-outline">
+                                  View Tutorial
+                                </a>
                             </div>
                         </div>
                     </div>

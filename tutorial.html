@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PacLearn - Tutorials</title>
+    <title>CTLab - Tutorials</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .btn {
             display: inline-flex;
@@ -182,11 +183,11 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-indigo-800"></i>
-                    <a href="index.html" class="ml-2 text-xl font-bold text-slate-400">CTLab</a>
+                    <a href="index.html" class="ml-2 text-xl font-bold">CTLab</a>
                 </div>
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
-                    <button class="btn btn-ghost">Lab</button>
+                    <a href="lab.html" class="btn btn-ghost">Lab</a>
                     <a href="authentication.html" class="btn btn-outline">
                         <i class="fas fa-sign-in-alt mr-2"></i>
                         Login
@@ -213,10 +214,10 @@
             </button>
         </div>
         <div class="flex flex-col space-y-4">
-            <button class="btn btn-ghost w-full text-left menu-item">
+            <a href="lab.html" class="btn btn-ghost w-full text-left menu-item">
                 <i class="fas fa-flask mr-2"></i>
                 Lab
-            </button>
+            </a>
             <button class="btn btn-outline w-full text-left menu-item">
                 <i class="fas fa-sign-in-alt mr-2"></i>
                 Login
@@ -249,7 +250,7 @@
                                 </div>
                             </div>
                             <h3 class="text-xl font-semibold mb-2">Introduction to CTMan Gameplay</h3>
-                            <p class="text-gray-600 mb-4">Learn the basics of interactive CTMan gameplay. Perfect for beginners!</p>
+                            <p class="text-gray-600 mb-4">Master the fundamental controls and learn how to navigate CTMan through the maze using simple commands.</p>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center text-gray-500">
                                     <i class="fas fa-clock mr-1"></i>
@@ -260,32 +261,13 @@
                         </div>
                     </div>
 
-                    <div class="tutorial-card bg-white rounded-lg shadow overflow-hidden">
+                    <div class="tutorial-card tutorial-lock bg-white rounded-lg shadow overflow-hidden">
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <span class="badge badge-beginner">Beginner</span>
                                 </div>
-                            </div>
-                            <h3 class="text-xl font-semibold mb-2">Basic Controls and Movement</h3>
-                            <p class="text-gray-600 mb-4">Master the fundamental controls and learn how to navigate CTMan through the maze using simple commands.</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center text-gray-500">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    5 mins
-                                </div>
-                                <button class="btn btn-primary">Learn</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tutorial-card bg-white rounded-lg shadow overflow-hidden">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <span class="badge badge-beginner">Beginner</span>
-                                </div>
-                                <span class="text-gray-600 flex items-center">
+                                <span class="text-gray-600 flex items-center privilege-lock">
                                     <i class="fas fa-lock mr-1"></i>
                                     Locked
                                 </span>
@@ -297,18 +279,18 @@
                                     <i class="fas fa-clock mr-1"></i>
                                     10 mins
                                 </div>
-                                <button class="btn btn-outline" disabled>Users only</button>
+                                <a href="tutorial-conditionals.html" class="btn btn-outline btn-privileged" disabled>Users only</a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="tutorial-card bg-white rounded-lg shadow overflow-hidden">
+                    <div class="tutorial-card tutorial-lock bg-white rounded-lg shadow overflow-hidden">
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <span class="badge badge-beginner">Beginner</span>
                                 </div>
-                                <span class="text-gray-600 flex items-center">
+                                <span class="text-gray-600 flex items-center privilege-lock">
                                     <i class="fas fa-lock mr-1"></i>
                                     Locked
                                 </span>
@@ -320,18 +302,18 @@
                                     <i class="fas fa-clock mr-1"></i>
                                     10 mins
                                 </div>
-                                <button class="btn btn-outline" disabled>Users only</button>
+                                <a href="tutorial-loops.html" class="btn btn-outline btn-privileged" disabled>Users only</a>
                             </div>
                         </div>
                     </div>
 
-                    <div class="tutorial-card bg-white rounded-lg shadow overflow-hidden">
+                    <div class="tutorial-card tutorial-lock bg-white rounded-lg shadow overflow-hidden">
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <span class="badge badge-intermediate">Intermediate</span>
                                 </div>
-                                <span class="text-gray-600 flex items-center">
+                                <span class="text-gray-600 flex items-center privilege-lock">
                                     <i class="fas fa-lock mr-1"></i>
                                     Locked
                                 </span>
@@ -343,7 +325,7 @@
                                     <i class="fas fa-clock mr-1"></i>
                                     20 mins
                                 </div>
-                                <button class="btn btn-outline" disabled>Users only</button>
+                                <a href="tutorial-functions.html" class="btn btn-outline btn-privileged" disabled>Users only</a>
                             </div>
                         </div>
                     </div>
@@ -352,7 +334,15 @@
         </main>
     </div>
 
-    <script>
+    <script type="module">
+        // Initialize Supabase client
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
         // Mobile menu functionality
         const burgerBtn = document.getElementById('burgerBtn');
         const closeMenu = document.getElementById('closeMenu');
@@ -375,6 +365,23 @@
                 toggleMenu();
             }
         });
+
+        // Check if user is logged in
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // User is logged in, enable locked tutorials
+                document.querySelectorAll('.tutorial-lock').forEach(tutorial => {
+                    tutorial.querySelector('.privilege-lock').style.display = 'none';
+                    tutorial.querySelector('.btn-privileged').innerText = 'Learn';
+                    tutorial.querySelector('.btn-privileged').disabled = false;
+                    tutorial.querySelector('.btn-privileged').classList.add('btn-primary');
+                    tutorial.querySelector('.btn-outline').classList.remove('btn-outline');
+                });
+            }
+        }
+
+        checkUser();
     </script>
 </body>
 </html>
