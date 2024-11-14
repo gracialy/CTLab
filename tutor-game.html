@@ -160,6 +160,30 @@
             opacity: 1;
             visibility: visible;
         }
+
+        body, html {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Footer styling */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -227,7 +251,7 @@
     </div>
 
     <!-- Main content -->
-    <div class="flex">
+    <div class="flex h-full">
         <main class="flex-1 p-6 max-w-4xl mx-auto">
             <!-- Progress indicator -->
             <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -383,21 +407,19 @@ moveUp()     # Move up to fourth dot</code></pre>
                     </section>
                 </div>
             </div>
-
-            <!-- Navigation buttons -->
-            <div class="flex justify-between items-center mt-6">
-                <button
-                    class="bg-white border rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50 flex items-center prev-btn">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Previous Lesson
-                </button>
-                <button
-                    class="bg-indigo-800 text-white rounded-lg px-4 py-2 hover:bg-indigo-800 flex items-center next-btn">
-                    Next Lesson
-                    <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
         </main>
+
+        <!-- Footer navigation buttons -->
+        <footer>
+            <button class="bg-white border rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50 flex items-center prev-btn">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Previous Lesson
+            </button>
+            <button class="bg-indigo-800 text-white rounded-lg px-4 py-2 hover:bg-indigo-800 flex items-center next-btn">
+                Next Lesson
+                <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </footer>
     </div>
 
     <script type="module">
@@ -445,21 +467,21 @@ moveUp()     # Move up to fourth dot</code></pre>
 
         // Create completion modal HTML
         const modalHTML = `
-    <div id="completionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
-        <div class="bg-white p-8 rounded-lg max-w-md mx-4 relative">
-            <div class="text-center">
-                <div class="mb-4">
-                    <i class="fas fa-trophy text-yellow-500 text-4xl"></i>
+            <div id="completionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+                <div class="bg-white p-8 rounded-lg max-w-md mx-4 relative">
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-trophy text-yellow-500 text-4xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-4">Congratulations!</h2>
+                        <p class="text-gray-600 mb-6">You've completed the Introduction to CTMan Gameplay module!</p>
+                        <a href="tutorial.html" id="continueBtn" class="bg-indigo-800 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+                            Continue Learning
+                        </a>
+                    </div>
                 </div>
-                <h2 class="text-2xl font-bold mb-4">Congratulations!</h2>
-                <p class="text-gray-600 mb-6">You've completed the Introduction to CTMan Gameplay module!</p>
-                <a href="tutorial.html" id="continueBtn" class="bg-indigo-800 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
-                    Continue Learning
-                </a>
             </div>
-        </div>
-    </div>
-`;
+        `;
 
         // Add modal to document
         document.body.insertAdjacentHTML('beforeend', modalHTML);
