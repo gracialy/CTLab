@@ -172,7 +172,6 @@
             overflow-y: auto;
         }
 
-        /* Footer styling */
         footer {
             position: fixed;
             bottom: 0;
@@ -194,7 +193,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-indigo-800"></i>
-                    <span class="ml-2 text-xl font-bold text-slate-400">CTLab</span>
+                    <a href="index.html" class="ml-2 text-xl font-bold text-slate-400">CTLab</a>
                 </div>
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
@@ -405,20 +404,37 @@ moveUp()     # Move up to fourth dot</code></pre>
                             </ul>
                         </div>
                     </section>
+
+                    <div id="completionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
+                        <div class="bg-white p-8 rounded-lg max-w-md mx-4 relative">
+                            <div class="text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-trophy text-yellow-500 text-4xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold mb-4">Congratulations!</h2>
+                                <p class="text-gray-600 mb-6">You've completed the Introduction to CTMan Gameplay module!</p>
+                                <a href="tutorial.html" id="continueBtn" class="bg-indigo-800 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+                                    Go to Tutorial
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
 
         <!-- Footer navigation buttons -->
         <footer>
-            <button class="bg-white border rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50 flex items-center prev-btn">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Previous Lesson
-            </button>
-            <button class="bg-indigo-800 text-white rounded-lg px-4 py-2 hover:bg-indigo-800 flex items-center next-btn">
-                Next Lesson
-                <i class="fas fa-arrow-right ml-2"></i>
-            </button>
+            <div class="max-w-4xl mx-auto flex justify-between w-full">
+                <button class="bg-white border rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-50 flex items-center prev-btn">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Previous Lesson
+                </button>
+                <button class="bg-indigo-800 text-white rounded-lg px-4 py-2 hover:bg-indigo-800 flex items-center next-btn">
+                    Next Lesson
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
         </footer>
     </div>
 
@@ -430,10 +446,87 @@ moveUp()     # Move up to fourth dot</code></pre>
         const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-        // Check user authentication status
-        async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
 
+        const navBar = document.querySelector('nav');
+        const desktopMenu = document.querySelector('.desktop-menu');
+        const loginBtns = document.querySelectorAll('.login-btn');
+        const profileBtns = document.querySelectorAll('.profile-btn');
+
+        const sections = document.querySelectorAll('.tutor-section');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        const progressBar = document.querySelector('.bg-indigo-800');
+
+        const completionModal = document.getElementById('completionModal');
+        const continueBtn = document.getElementById('continueBtn');
+
+        let currentSection = 0;
+        let isModuleCompleted = false;
+
+        checkAuth();
+        updateProgress();
+
+        // Hide all sections initially except the first one
+        sections.forEach((section, index) => {
+            section.style.display = index === 0 ? 'block' : 'none';
+        });
+
+        // Event listener for previous button
+        prevBtn.addEventListener('click', () => {
+            if (currentSection > 0) {
+                currentSection--;
+                updateProgress();
+                if (session) {
+                    saveProgress(session.user.id, 1, currentSection);
+                }
+            }
+        });
+
+        // Event listener for next/complete button
+        nextBtn.addEventListener('click', async () => {
+            if (currentSection === sections.length - 1) {
+                isModuleCompleted = true;
+                showCompletionModal();
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else if (currentSection < sections.length - 1) {
+                currentSection++;
+                updateProgress();
+            }
+            if (session) {
+                saveProgress(session.user.id, 1, currentSection);
+            }
+        });
+
+        // Event listener for keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSection < sections.length - 1) {
+                currentSection++;
+                updateProgress();
+                if (session) {
+                    saveProgress(session.user.id, 1, currentSection);
+                }
+            } else if (e.key === 'ArrowLeft' && currentSection > 0) {
+                currentSection--;
+                updateProgress();
+                if (session) {
+                    saveProgress(session.user.id, 1, currentSection);
+                }
+            } else if (e.key === 'Escape' && completionModal.style.display === 'flex') {
+                hideCompletionModal();
+            }
+        });
+
+        // Event listener for clicking outside modal to close
+        completionModal.addEventListener('click', (e) => {
+            if (e.target === completionModal) {
+                hideCompletionModal();
+            }
+        });
+
+        // Update element related to authentication status
+        async function checkAuth() {
             const authButtonContainer = document.getElementById('authButtonContainer');
             const mobileAuthButtonContainer = document.getElementById('mobileAuthButtonContainer');
 
@@ -441,6 +534,25 @@ moveUp()     # Move up to fourth dot</code></pre>
                 // User is logged in
                 loginBtns.forEach(btn => btn.style.display = 'none');
                 profileBtns.forEach(btn => btn.style.display = 'flex');
+
+                // Pick up where user left off
+                const { data, error } = await supabase
+                    .from('tutor-progress')
+                    .select('last_lesson, is_completed')
+                    .eq('uid', session.user.id)
+                    .eq('module_id', 1);
+
+                if (error) {
+                    console.error('Error fetching progress:', error.message);
+                } else if (data.length > 0) {
+                    if (data[0].last_lesson != null) {
+                        currentSection = data[0].last_lesson;
+                    }
+                    if (data[0].is_completed != null) {
+                        isModuleCompleted = data[0].is_completed;
+                    }
+                    updateProgress();
+                }
             } else {
                 // User is not logged in
                 loginBtns.forEach(btn => btn.style.display = 'flex');
@@ -448,60 +560,7 @@ moveUp()     # Move up to fourth dot</code></pre>
             }
         }
 
-        // Get the related DOM elements
-        const navBar = document.querySelector('nav');
-        const desktopMenu = document.querySelector('.desktop-menu');
-        const loginBtns = document.querySelectorAll('.login-btn');
-        const profileBtns = document.querySelectorAll('.profile-btn');
-
-        // Get DOM elements
-        const sections = document.querySelectorAll('.tutor-section');
-        const prevBtn = document.querySelector('.prev-btn');
-        const nextBtn = document.querySelector('.next-btn');
-        const progressBar = document.querySelector('.bg-indigo-800');
-
-        // Initialize state
-        // Initialize state
-        let currentSection = 0;
-        let isModuleCompleted = false;
-
-        // Create completion modal HTML
-        const modalHTML = `
-            <div id="completionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display: none;">
-                <div class="bg-white p-8 rounded-lg max-w-md mx-4 relative">
-                    <div class="text-center">
-                        <div class="mb-4">
-                            <i class="fas fa-trophy text-yellow-500 text-4xl"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold mb-4">Congratulations!</h2>
-                        <p class="text-gray-600 mb-6">You've completed the Introduction to CTMan Gameplay module!</p>
-                        <a href="tutorial.html" id="continueBtn" class="bg-indigo-800 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
-                            Continue Learning
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Add modal to document
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-        // Get modal elements
-        const completionModal = document.getElementById('completionModal');
-        const continueBtn = document.getElementById('continueBtn');
-
-        // Hide all sections initially except the first one
-        sections.forEach((section, index) => {
-            section.style.display = index === 0 ? 'block' : 'none';
-        });
-
-        // Function to show modal
-        function showCompletionModal() {
-            completionModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Function to update progress
+        // Update progress
         function updateProgress() {
             // Calculate progress percentage
             const progress = (currentSection / (sections.length - 1)) * 100;
@@ -516,16 +575,16 @@ moveUp()     # Move up to fourth dot</code></pre>
                     Complete Module
                     <i class="fas fa-check ml-2"></i>
                 `;
-                        nextBtn.classList.remove('bg-indigo-800');
-                        nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                nextBtn.classList.remove('bg-indigo-800');
+                nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
 
-                        if (isModuleCompleted) {
-                            nextBtn.disabled = true;
-                            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                        }
-                    } else {
-                        // Reset next button to default state
-                        nextBtn.innerHTML = `
+                if (isModuleCompleted) {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                // Reset next button to default state
+                nextBtn.innerHTML = `
                     Next Lesson
                     <i class="fas fa-arrow-right ml-2"></i>
                 `;
@@ -540,90 +599,63 @@ moveUp()     # Move up to fourth dot</code></pre>
             });
         }
 
-        // Event listener for previous button
-        prevBtn.addEventListener('click', () => {
-            if (currentSection > 0) {
-                currentSection--;
-                updateProgress();
-            }
-        });
-
-        // Event listener for next/complete button
-        nextBtn.addEventListener('click', async () => {
+        async function saveProgress(userId, moduleId, currentSection) {
             if (currentSection === sections.length - 1) {
-                // Handle module completion
-                await saveCourseCompletion();
-                isModuleCompleted = true;
-                showCompletionModal();
-                nextBtn.disabled = true;
-                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (currentSection < sections.length - 1) {
-                currentSection++;
-                updateProgress();
+                // Save module completion
+                await saveModuleCompletion(userId, moduleId);
             }
-        });
-
-        // Function to save course completion to Supabase
-        async function saveCourseCompletion() {
-            const { data: { session } } = await supabase.auth.getSession();
-
-            if (session) {
-                const { user } = session;
-
-                const { error } = await supabase
-                    .from('course_progress')
-                    .upsert({
-                        user_id: user.id,
-                        completed: true,
-                        last_section: currentSection,
-                        completed_at: new Date().toISOString()
-                    });
+            try {
+                // Upsert: to insert or update progress
+                const { data, error } = await supabase
+                    .from('tutor-progress')
+                    .upsert({ 
+                        uid: userId, 
+                        module_id: moduleId, 
+                        last_lesson: currentSection, 
+                        last_access: new Date().toISOString()
+                    },
+                    { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
+                );
 
                 if (error) {
-                    console.error('Error saving course completion:', error);
-                } else {
-                    console.log('Course completion saved successfully.');
+                    console.error('Error saving progress:', error.message);
                 }
+            } catch (err) {
+                console.error('Unexpected error:', err.message);
             }
         }
 
-        // Check if module is already completed on page load
-        async function checkModuleCompletion() {
-            const { data: { session } } = await supabase.auth.getSession();
+        // Save module completion
+        async function saveModuleCompletion(userId, moduleId) {
+            const { error } = await supabase
+                .from('tutor-progress')
+                .upsert({
+                    uid: userId,
+                    module_id: moduleId,
+                    last_lesson: 0,
+                    last_access: new Date().toISOString(),
+                    is_completed: true,
+                    time_completed: new Date().toISOString()
+                },
+                { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
+            );
 
-            if (session) {
-                const { data, error } = await supabase
-                    .from('course_progress')
-                    .select('completed')
-                    .eq('user_id', session.user.id)
-                    .single();
-
-                if (data?.completed) {
-                    isModuleCompleted = true;
-                    if (currentSection === sections.length - 1) {
-                        nextBtn.disabled = true;
-                        nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    }
-                }
+            if (error) {
+                console.error('Error saving module completion:', error);
             }
         }
 
-        // Optional: Add keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' && currentSection < sections.length - 1) {
-                currentSection++;
-                updateProgress();
-            } else if (e.key === 'ArrowLeft' && currentSection > 0) {
-                currentSection--;
-                updateProgress();
-            }
-        });
+        // Show completion modal
+        function showCompletionModal() {
+            completionModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
 
-        // Initialize
-        checkModuleCompletion();
-        updateProgress();
-
-        checkAuth();
+        // Hide completion modal
+        function hideCompletionModal() {
+            completionModal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
     </script>
 
     <script>
