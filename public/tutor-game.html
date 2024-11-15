@@ -280,7 +280,7 @@
                         <h2 class="text-xl font-semibold mb-4">What is Computational Thinking?</h2>
                         <p class="text-gray-600 mb-4">
                             Meet <strong>CTMan</strong>, a Pac-Man like entity that move one step at a time insteads of
-                            continuously. To guide CTMan through a maze, you need to set up a set of commands that tell
+                            continuously. To guser_ide CTMan through a maze, you need to set up a set of commands that tell
                             him where to move. You can consider formulating those commands as applying computational
                             thinking!
                         </p>
@@ -531,9 +531,9 @@ moveUp()     # Move up to fourth dot</code></pre>
 
                 // Pick up where user left off
                 const { data, error } = await supabase
-                    .from('tutor-progress')
+                    .from('tutor_progress')
                     .select('last_lesson, is_completed')
-                    .eq('uid', session.user.id)
+                    .eq('user_id', session.user.id)
                     .eq('module_id', 1);
 
                 if (error) {
@@ -601,14 +601,14 @@ moveUp()     # Move up to fourth dot</code></pre>
             try {
                 // Upsert: to insert or update progress
                 const { data, error } = await supabase
-                    .from('tutor-progress')
+                    .from('tutor_progress')
                     .upsert({ 
-                        uid: userId, 
+                        user_id: userId, 
                         module_id: moduleId, 
                         last_lesson: currentSection, 
                         accessed_at: new Date().toISOString()
                     },
-                    { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
+                    { onConflict: ['user_id', 'module_id'] }  // Ensure unique per user and module
                 );
 
                 if (error) {
@@ -622,16 +622,16 @@ moveUp()     # Move up to fourth dot</code></pre>
         // Save module completion
         async function saveModuleCompletion(userId, moduleId) {
             const { error } = await supabase
-                .from('tutor-progress')
+                .from('tutor_progress')
                 .upsert({
-                    uid: userId,
+                    user_id: userId,
                     module_id: moduleId,
                     last_lesson: 0,
                     accessed_at: new Date().toISOString(),
                     is_completed: true,
                     completed_at: new Date().toISOString()
                 },
-                { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
+                { onConflict: ['user_id', 'module_id'] }  // Ensure unique per user and module
             );
 
             if (error) {
