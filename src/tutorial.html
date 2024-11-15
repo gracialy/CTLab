@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTLab - Tutorials</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: rgb(55, 48, 163);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: rgb(49, 46, 129);
+        }
+
+        .btn-outline {
+            border: 1px solid rgb(229, 231, 235);
+            background-color: white;
+            color: rgb(55, 65, 81);
+        }
+
+        .btn-outline:hover {
+            background-color: rgb(243, 244, 246);
+        }
+
+        .btn-ghost {
+            color: rgb(55, 65, 81);
+        }
+
+        .btn-ghost:hover {
+            background-color: rgb(243, 244, 246);
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            transition: right 0.3s ease-in-out;
+            z-index: 50;
+            padding: 1rem;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .burger-btn {
+            cursor: pointer;
+            display: none;
+            padding: 0.5rem;
+        }
+
+        /* Hide burger on desktop */
+        @media (max-width: 767px) {
+            .burger-btn {
+                display: block;
+            }
+
+            .desktop-menu {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .cta-buttons>div {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 1rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+
+            .btn-primary,
+            .btn-outline {
+                width: auto;
+            }
+
+            .desktop-menu {
+                display: flex !important;
+            }
+        }
+
+        /* Animation for menu items */
+        .menu-item {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .mobile-menu.active .menu-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .mobile-menu.active .menu-item:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .mobile-menu.active .menu-item:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .mobile-menu.active .menu-item:nth-child(3) {
+            transition-delay: 0.3s;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 40;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Tutorial card hover effect */
+        .tutorial-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: rgb(55, 48, 163);
+            transition: width 0.3s ease;
+        }
+
+        /* Badge styles */
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-beginner {
+            background-color: #DEF7EC;
+            color: #03543F;
+        }
+
+        .badge-intermediate {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+
+        .badge-advanced {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-indigo-800"></i>
+                    <a href="../index.html" class="ml-2 text-xl font-bold text-indigo-800">CTLab</a>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="desktop-menu items-center space-x-4">
+                    <a href="lab.html" class="btn btn-ghost">Lab</a>
+                    <a href="authentication.html" class="btn btn-outline login-btn">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Login
+                    </a>
+                    <a href="authentication.html" class="btn btn-outline profile-btn" style="display: none;">
+                        <i class="fas fa-user mr-2"></i>
+                        Profile
+                    </a>
+                </div>
+                <!-- Burger Button -->
+                <button class="burger-btn" id="burgerBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="overlay" id="overlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-robot text-indigo-800"></i>
+                <a href="../index.html" class="ml-2 text-xl font-bold text-indigo-800">CTLab</a>
+            </div>
+            <button class="p-2" id="closeMenu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+            <a href="lab.html" class="btn btn-ghost w-full text-left menu-item">
+                <i class="fas fa-flask mr-2"></i>
+                Lab
+            </a>
+            <a href="authentication.html" class="btn btn-outline w-full text-left login-btn menu-item">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Login
+            </a>
+            <a href="authentication.html" class="btn btn-outline w-full text-left profile-btn menu-item"
+                style="display: none;">
+                <i class="fas fa-user mr-2"></i>
+                Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="flex">
+        <!-- Main content -->
+        <main class="flex-1 p-6">
+            <div class="max-w-4xl mx-auto">
+                <!-- Progress tracker -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold">Your Progress</h2>
+                        <span class="text-gray-500 progress-status" style="display: none;">0/4 Lessons Completed</span>
+                        <span class="text-gray-500 progress-fetch">Loading...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Tutorial cards -->
+                <div class="grid gap-6">
+                    <div class="tutorial-card bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="badge badge-beginner">Beginner</span>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Introduction to CTMan Gameplay</h3>
+                            <p class="text-gray-600 mb-4">Master the fundamental controls and learn how to navigate
+                                CTMan through the maze using simple commands.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    5 mins
+                                </div>
+                                <a href="tutor-game.html" class="btn btn-primary">Start Learning</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card tutorial-lock bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="badge badge-beginner">Beginner</span>
+                                </div>
+                                <span class="text-gray-600 flex items-center privilege-lock">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Locked
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Conditionals</h3>
+                            <p class="text-gray-600 mb-4">Discover how to use conditionals and how it make CTMan perform
+                                actions logically.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    10 mins
+                                </div>
+                                <a href="tutorial-conditionals.html" class="btn btn-outline btn-privileged"
+                                    disabled>Users only</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card tutorial-lock bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="badge badge-beginner">Beginner</span>
+                                </div>
+                                <span class="text-gray-600 flex items-center privilege-lock">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Locked
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Loops</h3>
+                            <p class="text-gray-600 mb-4">Discover how to use loops and how it makes CTMan perform
+                                repeated actions efficiently.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    10 mins
+                                </div>
+                                <a href="tutorial-loops.html" class="btn btn-outline btn-privileged" disabled>Users
+                                    only</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card development-lock bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="badge badge-intermediate">Intermediate</span>
+                                </div>
+                                <span class="text-gray-600 flex items-center privilege-lock">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Locked
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Functions</h3>
+                            <p class="text-gray-600 mb-4">Discover how to use function and how it efficiently save
+                                CTMan's repeated behaviors.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-gray-500">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    20 mins
+                                </div>
+                                <a href="tutorial-functions.html" class="btn btn-outline btn-privileged" disabled>Users
+                                    only</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        // Initialize Supabase client
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // Mobile menu functionality
+        const burgerBtn = document.getElementById('burgerBtn');
+        const closeMenu = document.getElementById('closeMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        }
+
+        burgerBtn.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Close menu on window resize
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768 && mobileMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+
+        const navBar = document.querySelector('nav');
+        const desktopMenu = document.querySelector('.desktop-menu');
+        const loginBtns = document.querySelectorAll('.login-btn');
+        const profileBtns = document.querySelectorAll('.profile-btn');
+
+        const progressStatus = document.querySelector('.progress-status');
+        const progressFetch = document.querySelector('.progress-fetch');
+        const progressFill = document.querySelector('.progress-fill');
+
+        // Check if user is logged in
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                // Show real progress status & progress bar & module status
+                await getModuleProgress(user.id);
+                await getModuleStatus(user.id);
+
+                // Enable locked tutorials
+                document.querySelectorAll('.tutorial-lock').forEach(tutorial => {
+                    tutorial.querySelector('.privilege-lock').style.display = 'none';
+                    tutorial.querySelector('.btn-privileged').innerText = 'Start Learning';
+                    tutorial.querySelector('.btn-privileged').disabled = false;
+                    tutorial.querySelector('.btn-privileged').classList.add('btn-primary');
+                    tutorial.querySelector('.btn-outline').classList.remove('btn-outline');
+                });
+
+                document.querySelectorAll('.development-lock').forEach(tutorial => {
+                    tutorial.querySelector('.btn-privileged').innerText = 'Available Soon';
+                });
+
+                loginBtns.forEach(btn => btn.style.display = 'none');
+                profileBtns.forEach(btn => btn.style.display = 'flex');
+            } else {
+                // User is not logged in
+                loginBtns.forEach(btn => btn.style.display = 'flex');
+                profileBtns.forEach(btn => btn.style.display = 'none');
+
+                // Show placeholder progress status & bar
+                progressStatus.style.display = 'block';
+                progressFetch.style.display = 'none';
+                progressFill.style.width = '0%';
+            }
+        }
+
+        // Fetch user progress
+        async function getModuleProgress(userId) {
+            const { data: progressData, error: progressError } = await supabase
+            .from('tutor_progress')
+            .select('is_completed', { count: 'exact' })
+            .eq('user_id', userId)
+            .eq('is_completed', true);
+
+            const { data: moduleData, error: moduleError } = await supabase
+            .from('tutor_module')
+            .select('*', { count: 'exact' });
+
+            if (progressError || moduleError) {
+            console.error('Error fetching progress or module data:', progressError || moduleError);
+            return;
+            }
+
+            const completedLessons = progressData ? progressData.length : 0;
+            const totalLessons = moduleData.length;
+
+            document.querySelector('.progress-status').innerText = `${completedLessons}/${totalLessons} Lessons Completed`;
+            progressStatus.style.display = 'block';
+            progressFetch.style.display = 'none';
+            document.querySelector('.progress-fill').style.width = `${(completedLessons / totalLessons) * 100}%`;
+        }
+
+        // Fetch user module status
+        async function getModuleStatus(userId) {
+            const tutorialCards = document.querySelectorAll('.tutorial-card:not(.development-lock)');
+            for (let i = 0; i < tutorialCards.length; i++) {
+                const tutorialCard = tutorialCards[i];
+                const module_id = i + 1;
+
+                const { data: tutorialProgress, error: tutorialError } = await supabase
+                    .from('tutor_progress')
+                    .select('accessed_at, is_completed')
+                    .eq('user_id', userId)
+                    .eq('module_id', module_id)
+                    .maybeSingle();
+
+                if (tutorialError && tutorialError.code !== 'PGRST116') {
+                    console.error(`Error fetching progress for module ${module_id}:`, tutorialError);
+                    continue;
+                }
+
+                if (tutorialProgress) {
+                    if (tutorialProgress.is_completed) {
+                        tutorialCard.querySelector('.btn-primary').innerText = 'Learn Again';
+                    } else {
+                        tutorialCard.querySelector('.btn-primary').innerText = 'Continue Learning';
+                    }
+                }
+            }
+        }
+
+        checkUser();
+    </script>
+</body>
+
+</html>

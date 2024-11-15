@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTLab - Lab</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: rgb(55, 48, 163);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: white;
+            color: black;
+        }
+
+        .btn-outline {
+            border: 1px solid rgb(229, 231, 235);
+            background-color: white;
+            color: rgb(55, 65, 81);
+            width: 100%;
+        }
+
+        .btn-outline:hover {
+            background-color: rgb(243, 244, 246);
+        }
+
+        .btn-ghost {
+            color: rgb(55, 65, 81);
+        }
+
+        .btn-ghost:hover {
+            background-color: rgb(243, 244, 246);
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            transition: right 0.3s ease-in-out;
+            z-index: 50;
+            padding: 1rem;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .burger-btn {
+            cursor: pointer;
+            display: none;
+            padding: 0.5rem;
+        }
+
+        /* Hide burger on desktop */
+        @media (max-width: 767px) {
+            .burger-btn {
+                display: block;
+            }
+
+            .desktop-menu {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .cta-buttons>div {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-top: 1rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+
+            .btn-primary,
+            .btn-outline {
+                width: auto;
+            }
+
+            .desktop-menu {
+                display: flex !important;
+            }
+        }
+
+        /* Animation for menu items */
+        .menu-item {
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .mobile-menu.active .menu-item {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .mobile-menu.active .menu-item:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .mobile-menu.active .menu-item:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .mobile-menu.active .menu-item:nth-child(3) {
+            transition-delay: 0.3s;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 40;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Game Styles */
+        .game-section {
+            margin-top: 2rem;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            background: #333;
+            padding: 0;
+            gap: 0;
+            border: none;
+            aspect-ratio: 1/1;
+            width: 100%;
+            max-width: 767px;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin: 0;
+            padding: 0;
+            border: none;
+            position: relative;
+        }
+
+        .cell::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid #f3f4f6;
+            pointer-events: none;
+        }
+
+        .cell.empty,
+        .cell.pellet {
+            background: white;
+        }
+
+        .command-item.dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-robot text-indigo-800"></i>
+                    <a href="../index.html" class="ml-2 text-xl font-bold text-slate-400 text-indigo-800">CTLab</a>
+                </div>
+                <!-- Desktop Menu -->
+                <div class="desktop-menu items-center space-x-4">
+                    <a href="tutorial.html" class="btn btn-ghost">Tutorial</a>
+                    <a href="authentication.html" class="btn btn-outline login-btn">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Login
+                    </a>
+                    <a href="authentication.html" class="btn btn-outline profile-btn" style="display: none;">
+                        <i class="fas fa-user mr-2"></i>
+                        Profile
+                    </a>
+                </div>
+                <!-- Burger Button -->
+                <button class="burger-btn" id="burgerBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="overlay" id="overlay"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-robot text-indigo-800"></i>
+                <span class="ml-2 text-xl font-bold text-indigo-800">CTLab</span>
+            </div>
+            <button class="p-2" id="closeMenu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-4">
+            <a href="tutorial.html" class="btn btn-ghost w-full text-left menu-item">
+                <i class="fas fa-book-open mr-2"></i>
+                Tutorial
+            </a>
+            <a href="authentication.html" class="btn btn-outline w-full text-left login-btn menu-item">
+                <i class="fas fa-sign-in-alt mr-2"></i>
+                Login
+            </a>
+            <a href="authentication.html" class="btn btn-outline w-full text-left profile-btn menu-item"
+                style="display: none;">
+                <i class="fas fa-user mr-2"></i>
+                Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto game-section">
+        <div class="flex flex-col md:flex-row gap-4">
+            <!-- Game Board -->
+            <div class="flex-1">
+                <div class="bg-white p-4 rounded-lg shadow-lg">
+                    <div id="game-stats" class="flex justify-between mb-4">
+                        <div>Lives: <span id="lives">3</span></div>
+                        <div>Score: <span id="score">0</span></div>
+                        <div>Iterations: <span id="iterations">20</span></div>
+                    </div>
+                    <div id="game-board" class="game-grid w-fit mx-auto gap-0"></div>
+                </div>
+            </div>
+
+            <!-- Command Section -->
+            <div class="w-full md:w-64">
+                <!-- Command Menu -->
+                <div class="bg-white p-4 rounded-lg shadow-lg mb-4">
+                    <h2 class="text-lg font-bold mb-2">Commands</h2>
+                    <div id="command-menu" class="grid grid-cols-2 gap-2">
+                        <button class="command bg-yellow-300 text-white p-2 rounded" data-command="left"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <button class="command bg-pink-300 text-white p-2 rounded" data-command="right"><i
+                                class="fas fa-arrow-right"></i></button>
+                        <button class="command bg-blue-300 text-white p-2 rounded" data-command="up"><i
+                                class="fas fa-arrow-up"></i></button>
+                        <button class="command bg-indigo-300 text-white p-2 rounded" data-command="down"><i
+                                class="fas fa-arrow-down"></i></button>
+                        <button class="command bg-red-400 text-white p-2 rounded" data-command="traffic"><i
+                                class="fas fa-traffic-light"></i></button>
+                        <button class="command bg-green-400 text-white p-2 rounded" data-command="barrier"><i
+                                class="fas fa-road"></i></button>
+                    </div>
+                </div>
+
+                <!-- Command Palette -->
+                <div class="bg-white p-4 rounded-lg shadow-lg mb-4">
+                    <h2 class="text-lg font-bold mb-2">Command Palette</h2>
+                    <div id="command-palette" class="min-h-[200px] border-2 border-dashed border-gray-300 p-2 rounded">
+                        <!-- Commands will be added here -->
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="bg-white p-4 rounded-lg shadow-lg mb-4">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="run-btn" class="bg-green-400 text-white p-2 rounded">Run</button>
+                        <button id="abort-btn" class="bg-red-400 text-white p-2 rounded">Abort</button>
+                        <button id="save-btn" class="bg-blue-400 text-white p-2 rounded">Save</button>
+                        <button id="load-btn" class="bg-purple-400 text-white p-2 rounded">Load</button>
+                    </div>
+                    <div class="mt-4"></div>
+                    <label for="saved-games" id="saved-games-label" class="block text-sm font-medium text-gray-700"
+                        style="display: none;">Select a saved game</label>
+                    <select id="saved-games"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                        style="display: none;">
+                        <option value="" disabled selected>Select a game to load</option>
+                        <!-- Load saved games -->
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // Mobile menu functionality
+        const burgerBtn = document.getElementById('burgerBtn');
+        const closeMenu = document.getElementById('closeMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        }
+
+        burgerBtn.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Close menu on window resize
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768 && mobileMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    </script>
+
+    <script type="module">
+        // Initialize Supabase client
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+        import { v4 as uuidv4 } from 'https://cdn.skypack.dev/uuid';
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // DOM elements
+        const navBar = document.querySelector('nav');
+        const desktopMenu = document.querySelector('.desktop-menu');
+        const loginBtns = document.querySelectorAll('.login-btn');
+        const profileBtns = document.querySelectorAll('.profile-btn');
+
+        const commandButtons = document.querySelectorAll('.command');
+        const runButton = document.getElementById('run-btn');
+        const abortButton = document.getElementById('abort-btn');
+        const saveButton = document.getElementById('save-btn');
+        const loadButton = document.getElementById('load-btn');
+
+        // Game state
+        const state = {
+            id: null,
+            board: Array(11).fill().map(() => Array(11).fill('empty')),
+            pacman: { x: 5, y: 5 },
+            ghosts: Array(2).fill().map((_, i) => ({
+                x: i === 0 ? 0 : 10,
+                y: i === 0 ? 0 : 10,
+                pattern: i === 0 ? Array(4).fill().map((_, j) => [[1, 0], [0, 1], [-1, 0], [0, -1]][j]) : [[0, -1], [-1, 0], [0, 1], [1, 0]]
+            })),
+            lives: 3,
+            score: 0,
+            iterations: 20,
+            running: false,
+            commands: [],
+            currentCommand: 0
+        };
+
+        // Event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+            initializeBoard();
+            renderBoard();
+            initializeCommandPalette();
+
+            runButton.addEventListener('click', runGame);
+            abortButton.addEventListener('click', () => {
+                state.running = false;
+            });
+            saveButton.addEventListener('click', saveGameState);
+            loadButton.addEventListener('click', loadGameState);
+        });
+
+        // Check user authentication status
+        async function updateUI() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            const authButtonContainer = document.getElementById('authButtonContainer');
+            const mobileAuthButtonContainer = document.getElementById('mobileAuthButtonContainer');
+
+            if (session) {
+                // User is logged in
+                loginBtns.forEach(btn => btn.style.display = 'none');
+                profileBtns.forEach(btn => btn.style.display = 'flex');
+            } else {
+                // User is not logged in
+                loginBtns.forEach(btn => btn.style.display = 'flex');
+                profileBtns.forEach(btn => btn.style.display = 'none');
+                let disabledControl = [saveButton, loadButton];
+                disabledControl.forEach(button => {
+                    button.disabled = true;
+                    const newColor = getComputedStyle(button).backgroundColor;
+                    button.style.color = newColor;
+                });
+            }
+        }
+
+        // Initialize board
+        function initializeBoard() {
+            // Generate random walls
+            for (let i = 0; i < 20; i++) {
+                const x = Math.floor(Math.random() * 11);
+                const y = Math.floor(Math.random() * 11);
+                if (!(x === state.pacman.x && y === state.pacman.y)) {
+                    state.board[y][x] = 'wall';
+                }
+            }
+
+            // Add pellets to empty spaces
+            for (let y = 0; y < 11; y++) {
+                for (let x = 0; x < 11; x++) {
+                    if (state.board[y][x] === 'empty' &&
+                        !(x === state.pacman.x && y === state.pacman.y) &&
+                        !state.ghosts.some(g => g.x === x && g.y === y)) {
+                        // Ghost initialization doesn't contain pellets
+                        state.board[y][x] = 'pellet';
+                    }
+                }
+            }
+        }
+
+        // Render board
+        function renderBoard() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+
+            for (let y = 0; y < 11; y++) {
+                for (let x = 0; x < 11; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    if (x === state.pacman.x && y === state.pacman.y) {
+                        cell.innerHTML = '<i class="fas fa-chess-pawn text-yellow-500">';
+                        cell.classList.add('bg-yellow-200');
+                    } else if (state.ghosts[0].x === x && state.ghosts[0].y === y || state.ghosts[1].x === x && state.ghosts[1].y === y) {
+                        cell.innerHTML = '<i class="fas fa-ghost text-red-500"></i>';
+                        cell.classList.add('bg-red-200');
+                    } else {
+                        switch (state.board[y][x]) {
+                            case 'wall-hit':
+                                cell.classList.add('bg-red-500');
+                                break;
+                            case 'wall':
+                                cell.classList.add('bg-indigo-800');
+                                break;
+                            case 'pellet':
+                                cell.innerHTML = '•';
+                                cell.classList.add('text-indigo-800');
+                                cell.classList.add('bg-white');
+                                break;
+                            case 'empty':
+                                cell.classList.add('bg-white');
+                                break;
+                        }
+                    }
+
+                    board.appendChild(cell);
+                }
+            }
+
+            // Update stats
+            document.getElementById('lives').textContent = state.lives;
+            document.getElementById('score').textContent = state.score;
+            document.getElementById('iterations').textContent = state.iterations;
+
+            // Disable commands and run/abort buttons if iterations or lives are 0
+            if (state.iterations <= 0 || state.lives <= 0) {
+                commandButtons.forEach(button => {
+                    button.disabled = true;
+                    const newColor = getComputedStyle(button).backgroundColor;
+                    button.style.color = newColor;
+                });
+                let disabledControl = [runButton, abortButton, saveButton];
+                disabledControl.forEach(button => {
+                    button.disabled = true;
+                    const newColor = getComputedStyle(button).backgroundColor;
+                    button.style.color = newColor;
+                });
+            } else {
+                commandButtons.forEach(button => button.disabled = false);
+                runButton.disabled = false;
+                abortButton.disabled = false;
+            }
+        }
+
+        // Move pacman
+        function movePacman(direction) {
+            const newPos = { ...state.pacman };
+
+            switch (direction) {
+                case 'left': newPos.x--; break;
+                case 'right': newPos.x++; break;
+                case 'up': newPos.y--; break;
+                case 'down': newPos.y++; break;
+            }
+
+            // Check collision with boundaries and walls
+            if (newPos.x < 0 || newPos.x > 10 || newPos.y < 0 || newPos.y > 10 ||
+                state.board[newPos.y][newPos.x] === 'wall') {
+                state.score -= 5;
+                const cell = document.querySelector(`.cell[data-x="${newPos.x}"][data-y="${newPos.y}"]`);
+                if (state.commands[state.currentCommand] != 'barrier') {
+                    state.lives--;
+                    if (cell) state.board[newPos.y][newPos.x] = 'wall-hit';
+                    state.running = false;
+                    state.commands = [];
+                    state.currentCommand = 0;
+                }
+                return false;
+            }
+
+            // Check pellets
+            if (state.board[newPos.y][newPos.x] === 'pellet') {
+                state.score += 10;
+                state.board[newPos.y][newPos.x] = 'empty';
+            }
+
+            state.pacman = newPos;
+            return true;
+        }
+
+        // Clear wall-hit to be wall again
+        function clearWallHit() {
+            for (let y = 0; y < 11; y++) {
+                for (let x = 0; x < 11; x++) {
+                    if (state.board[y][x] === 'wall-hit') {
+                        state.board[y][x] = 'wall';
+                    }
+                }
+            }
+        }
+
+        function moveGhosts() {
+            state.ghosts.forEach(ghost => {
+                ghost.patternIndex = (ghost.patternIndex || 0) + 1;
+                if (ghost.patternIndex >= ghost.pattern.length) {
+                    ghost.patternIndex = 0;
+                }
+
+                const move = ghost.pattern[ghost.patternIndex];
+                const newX = ghost.x + move[0];
+                const newY = ghost.y + move[1];
+
+                if (newX >= 0 && newX < 11 && newY >= 0 && newY < 11 &&
+                    state.board[newY][newX] !== 'wall') {
+                    ghost.x = newX;
+                    ghost.y = newY;
+                }
+
+                // Check collision with Pacman
+                if (ghost.x === state.pacman.x && ghost.y === state.pacman.y) {
+                    state.lives--;
+                    state.score -= 5;
+                }
+            });
+        }
+
+        // Command palette functionality
+        function initializeCommandPalette() {
+            const palette = document.getElementById('command-palette');
+            const menu = document.getElementById('command-menu');
+
+            // Make command palette sortable
+            new Sortable(palette, {
+                animation: 150,
+                ghostClass: 'bg-gray-100'
+            });
+
+            // Add commands from menu to palette
+            menu.querySelectorAll('.command').forEach(cmd => {
+                cmd.addEventListener('click', () => {
+                    if (state.commands.length < 10) {
+                        const command = cmd.dataset.command;
+                        addCommandToPalette(command);
+                    }
+                });
+            });
+        }
+
+        function addCommandToPalette(command) {
+            const palette = document.getElementById('command-palette');
+            const item = document.createElement('div');
+            item.className = "command-item p-2 mb-2 rounded cursor-pointer";
+            item.dataset.command = command;
+
+            switch (command) {
+                case 'traffic': {
+                    item.innerHTML = '<i class="fas fa-traffic-light text-white"></i>';
+                    item.classList.add('bg-red-400', 'text-center');
+                    break;
+                }
+                case 'barrier': {
+                    item.innerHTML = '<i class="fas fa-road text-white"></i>';
+                    item.classList.add('bg-green-400', 'text-center');
+                    break;
+                }
+                case 'left': {
+                    item.innerHTML = '<i class="fas fa-arrow-left text-white"></i>';
+                    item.classList.add('bg-yellow-300', 'text-center');
+                    break;
+                }
+                case 'right': {
+                    item.innerHTML = '<i class="fas fa-arrow-right text-white"></i>';
+                    item.classList.add('bg-pink-300', 'text-center');
+                    break;
+                }
+                case 'up': {
+                    item.innerHTML = '<i class="fas fa-arrow-up text-white"></i>';
+                    item.classList.add('bg-blue-300', 'text-center');
+                    break;
+                }
+                case 'down': {
+                    item.innerHTML = '<i class="fas fa-arrow-down text-white"></i>';
+                    item.classList.add('bg-indigo-300', 'text-center');
+                    break;
+                }
+            }
+
+            item.addEventListener('click', () => {
+                palette.removeChild(item);
+                state.commands = Array.from(palette.children).map(c => c.dataset.command);
+            });
+
+            palette.appendChild(item);
+            state.commands = Array.from(palette.children).map(c => c.dataset.command);
+        }
+
+        // Run game
+        async function runGame() {
+            if (state.commands.length === 0) return;
+            if (state.lives <= 0 || state.iterations <= 0) return;
+
+            state.iterations--;
+
+            state.running = true;
+            state.currentCommand = 0;
+
+            while (state.running && state.currentCommand < state.commands.length) {
+                const command = state.commands[state.currentCommand];
+
+                if (command === 'traffic') {
+                    let moved = true;
+                    if (state.commands[state.currentCommand + 1] !== 'left' &&
+                        state.commands[state.currentCommand + 1] !== 'right' &&
+                        state.commands[state.currentCommand + 1] !== 'up' &&
+                        state.commands[state.currentCommand + 1] !== 'down') {
+                        moved = false;
+                    }
+                    while (moved) {
+                        moved = isIntersection(state.commands[state.currentCommand + 1]);
+                        if (moved) {
+                            moved = moved = movePacman(state.commands[state.currentCommand + 1]);
+                            moveGhosts();
+                            renderBoard();
+                            await new Promise(r => setTimeout(r, 200));
+                        }
+                    }
+                    state.currentCommand++;
+                } else if (command === 'barrier') {
+                    let moved = true;
+                    if (state.commands[state.currentCommand + 1] !== 'left' &&
+                        state.commands[state.currentCommand + 1] !== 'right' &&
+                        state.commands[state.currentCommand + 1] !== 'up' &&
+                        state.commands[state.currentCommand + 1] !== 'down') {
+                        moved = false;
+                    }
+                    while (moved) {
+                        moved = movePacman(state.commands[state.currentCommand + 1]);
+                        if (moved) {
+                            moveGhosts();
+                            renderBoard();
+                            await new Promise(r => setTimeout(r, 200));
+                        }
+                    }
+                    state.currentCommand++;
+                } else {
+                    let moved = movePacman(command);
+                    if (moved) {
+                        moveGhosts();
+                    }
+                }
+
+                renderBoard();
+                await new Promise(r => setTimeout(r, 200));
+
+                if (state.lives <= 0 || state.iterations <= 0) {
+                    state.running = false;
+                    saveGameState();
+                    break;
+                } else {
+                    clearWallHit();
+                }
+
+                state.currentCommand++;
+            }
+
+            // After running
+            state.commands = [];
+            document.getElementById('command-palette').innerHTML = '';
+        }
+
+        function isIntersection(command) {
+            if (command === 'left' || command === 'right' || command === 'up' || command === 'down') {
+                return true;
+            }
+            return false;
+        }
+
+        // Save to Supabase
+        async function saveGameState() {
+            let uuid = uuidv4();
+            try {
+                const { data, error } = await supabase
+                    .from('lab_result')
+                    .upsert([{
+                        id: state.id || uuid,
+                        user_id: (await supabase.auth.getSession()).data.session.user.id,
+                        accessed_at: new Date().toISOString(),
+                        lives: state.lives,
+                        score: state.score,
+                        iterations: state.iterations,
+                        board: JSON.stringify(state.board),
+                        pacman: JSON.stringify(state.pacman),
+                        ghosts: JSON.stringify(state.ghosts),
+                        is_completed: state.lives < 0 || state.iterations < 0 || state.board.flat().filter(cell => cell === 'pellet').length === 0,
+                    }], { onConflict: ['id'] });
+
+                if (error) throw error;
+                else {
+                    state.id = uuid;
+                    alert('Game state saved!');
+                }
+            } catch (error) {
+                console.error('Error saving game state:', error);
+            }
+        }
+
+        async function loadGameState() {
+            try {
+                const { data, error } = await supabase
+                    .from('lab_result')
+                    .select('*')
+                    .order('accessed_at', { ascending: false });
+
+                if (error) throw error;
+
+                const gameList = data.map(game => {
+                    return `<option value="${game.id}">Last access: ${game.accessed_at} - Score: ${game.score} - Lives: ${game.lives}</option>`;
+                }).join('');
+
+                const gameSelect = document.getElementById('saved-games');
+                document.getElementById('saved-games-label').style.display = 'block';
+                gameSelect.style.display = 'block';
+                gameSelect.style.display = 'block';
+                gameSelect.innerHTML = gameList;
+
+                gameSelect.addEventListener('change', async (event) => {
+                    const selectedGameId = event.target.value;
+                    const { data: selectedGame, error } = await supabase
+                        .from('lab_result')
+                        .select('*')
+                        .eq('id', selectedGameId)
+                        .single();
+
+                    if (error) throw error;
+
+                    // Assign saved state to current state
+                    state.id = selectedGame.id;
+                    state.lives = selectedGame.lives;
+                    state.score = selectedGame.score;
+                    state.iterations = selectedGame.iterations;
+                    state.board = JSON.parse(selectedGame.board);
+                    state.pacman = JSON.parse(selectedGame.pacman);
+                    state.ghosts = JSON.parse(selectedGame.ghosts);
+                    state.running = false;
+                    state.commands = [];
+                    state.currentCommand = 0;
+
+                    renderBoard();
+                });
+            } catch (error) {
+                console.error('Error loading game state:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>
