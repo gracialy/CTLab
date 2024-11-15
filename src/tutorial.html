@@ -90,14 +90,6 @@
                 margin-left: 0 !important;
                 margin-top: 1rem;
             }
-
-            .hero-text {
-                text-align: center;
-            }
-
-            .hero-buttons {
-                justify-content: center !important;
-            }
         }
 
         @media (min-width: 768px) {
@@ -211,7 +203,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-indigo-800"></i>
-                    <a href="index.html" class="ml-2 text-xl font-bold">CTLab</a>
+                    <a href="../index.html" class="ml-2 text-xl font-bold text-indigo-800">CTLab</a>
                 </div>
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
@@ -239,7 +231,7 @@
         <div class="flex justify-between items-center mb-8">
             <div class="flex items-center">
                 <i class="fas fa-robot text-indigo-800"></i>
-                <a href="index.html" class="ml-2 text-xl font-bold">CTLab</a>
+                <a href="../index.html" class="ml-2 text-xl font-bold text-indigo-800">CTLab</a>
             </div>
             <button class="p-2" id="closeMenu">
                 <i class="fas fa-times"></i>
@@ -458,13 +450,13 @@
         // Fetch user progress
         async function getModuleProgress(userId) {
             const { data: progressData, error: progressError } = await supabase
-            .from('tutor-progress')
+            .from('tutor_progress')
             .select('is_completed', { count: 'exact' })
-            .eq('uid', userId)
+            .eq('user_id', userId)
             .eq('is_completed', true);
 
             const { data: moduleData, error: moduleError } = await supabase
-            .from('tutor-module')
+            .from('tutor_module')
             .select('*', { count: 'exact' });
 
             if (progressError || moduleError) {
@@ -489,9 +481,9 @@
                 const module_id = i + 1;
 
                 const { data: tutorialProgress, error: tutorialError } = await supabase
-                    .from('tutor-progress')
-                    .select('last_access, is_completed')
-                    .eq('uid', userId)
+                    .from('tutor_progress')
+                    .select('accessed_at, is_completed')
+                    .eq('user_id', userId)
                     .eq('module_id', module_id)
                     .maybeSingle();
 

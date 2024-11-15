@@ -96,14 +96,6 @@
                 margin-left: 0 !important;
                 margin-top: 1rem;
             }
-
-            .hero-text {
-                text-align: center;
-            }
-
-            .hero-buttons {
-                justify-content: center !important;
-            }
         }
 
         @media (min-width: 768px) {
@@ -193,12 +185,12 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <i class="fas fa-robot text-indigo-800"></i>
-                    <a href="index.html" class="ml-2 text-xl font-bold text-slate-400">CTLab</a>
+                    <a href="../index.html" class="ml-2 text-xl font-bold text-slate-400 text-indigo-800">CTLab</a>
                 </div>
                 <!-- Desktop Menu -->
                 <div class="desktop-menu items-center space-x-4">
                     <a href="tutorial.html" class="btn btn-ghost">Tutorial</a>
-                    <button class="btn btn-ghost">Lab</button>
+                    <a href="lab.html" class="btn btn-ghost">Lab</a>
                     <a href="authentication.html" class="btn btn-outline login-btn">
                         <i class="fas fa-sign-in-alt mr-2"></i>
                         Login
@@ -222,7 +214,7 @@
         <div class="flex justify-between items-center mb-8">
             <div class="flex items-center">
                 <i class="fas fa-robot text-indigo-800"></i>
-                <span class="ml-2 text-xl font-bold">CTLab</span>
+                <span class="ml-2 text-xl font-bold text-indigo-800">CTLab</span>
             </div>
             <button class="p-2" id="closeMenu">
                 <i class="fas fa-times"></i>
@@ -612,7 +604,7 @@ moveUp()     # Move up to fourth dot</code></pre>
                         uid: userId, 
                         module_id: moduleId, 
                         last_lesson: currentSection, 
-                        last_access: new Date().toISOString()
+                        accessed_at: new Date().toISOString()
                     },
                     { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
                 );
@@ -633,9 +625,9 @@ moveUp()     # Move up to fourth dot</code></pre>
                     uid: userId,
                     module_id: moduleId,
                     last_lesson: 0,
-                    last_access: new Date().toISOString(),
+                    accessed_at: new Date().toISOString(),
                     is_completed: true,
-                    time_completed: new Date().toISOString()
+                    completed_at: new Date().toISOString()
                 },
                 { onConflict: ['uid', 'module_id'] }  // Ensure unique per user and module
             );
