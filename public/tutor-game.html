@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CTLab - Tutorial</title>
+    <script src="/env-config.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -434,9 +435,10 @@ moveUp()     # Move up to fourth dot</code></pre>
         // Initialize Supabase client
         import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
 
-        const supabaseUrl = "https://bweuqjoadpenrwfwjfks.supabase.co";
-        const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3ZXVxam9hZHBlbnJ3ZndqZmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzEzNzgxNzYsImV4cCI6MjA0Njk1NDE3Nn0.YGmZ-vjCMtRXjfBteOSgFNW86e_2_1uYn_XnqGiQUW4";
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        const supabase = createClient(
+            window.ENV.SUPABASE_URL,
+            window.ENV.SUPABASE_KEY
+        );
 
         const { data: { session } } = await supabase.auth.getSession();
 
